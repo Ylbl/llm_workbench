@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import WorkspaceShell from '../views/WorkspaceShell.vue'
 import MathDemo from '../views/MathDemo.vue'
+import LlmSettingsPane from '../views/LlmSettingsPane.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -29,6 +30,11 @@ const router = createRouter({
       path: '/math-demo',
       name: 'math-demo',
       component: MathDemo,
+    },
+    {
+      path: '/llm-settings',
+      name: 'llm-settings',
+      component: LlmSettingsPane,
     },
   ],
 })

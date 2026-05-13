@@ -1,8 +1,12 @@
+pub mod agents;
 pub mod config;
+pub mod conversations;
 pub mod db;
 pub mod error;
 mod health;
+pub mod llm;
 pub mod notes;
+pub mod prompt_blocks;
 pub mod settings;
 pub mod state;
 pub mod workspace;
@@ -23,6 +27,10 @@ pub fn build_router(state: AppState) -> Router {
         .merge(settings::routes())
         .merge(workspace::routes())
         .merge(notes::routes())
+        .merge(conversations::routes())
+        .merge(llm::routes())
+        .merge(prompt_blocks::routes())
+        .merge(agents::routes())
         .fallback(error::not_found)
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())

@@ -6,6 +6,8 @@ import { useWorkspaceStore } from '../stores/workspace'
 import type { WorkspaceItem } from '../api/workspace'
 import SettingsPane from './SettingsPane.vue'
 import NoteEditorPane from '../components/NoteEditorPane.vue'
+import ChatPane from '../components/ChatPane.vue'
+import AgentConfigPane from '../components/AgentConfigPane.vue'
 
 const health = useHealthStore()
 const workspace = useWorkspaceStore()
@@ -142,6 +144,7 @@ watch(
       <nav class="sidebar-nav" aria-label="Workspace">
         <RouterLink to="/workspace" class="sidebar-link">Workspace</RouterLink>
         <RouterLink to="/settings" class="sidebar-link">Settings</RouterLink>
+        <RouterLink to="/llm-settings" class="sidebar-link">LLM</RouterLink>
       </nav>
 
       <div class="sidebar-section" aria-label="Workspace items">
@@ -281,6 +284,12 @@ watch(
         <div v-else>
           <template v-if="selectedItem.item_type === 'note'">
             <NoteEditorPane :workspaceItem="selectedItem" />
+          </template>
+          <template v-else-if="selectedItem.item_type === 'chat'">
+            <ChatPane :workspaceItem="selectedItem" />
+          </template>
+          <template v-else-if="selectedItem.item_type === 'agent_config'">
+            <AgentConfigPane :workspaceItem="selectedItem" />
           </template>
           <template v-else>
             <div class="section-title-row">
