@@ -7,7 +7,8 @@ vi.mock('vue-router', async (importOriginal) => {
   const actual = await importOriginal<typeof import('vue-router')>()
   return {
     ...actual,
-    useRoute: () => ({ name: 'workspace' }),
+    useRoute: () => ({ name: 'workspace', params: {} }),
+    useRouter: () => ({ push: vi.fn() }),
   }
 })
 
@@ -17,26 +18,34 @@ describe('WorkspaceShell', () => {
   })
 
   it('renders the app shell and loaded health status', async () => {
+    const workspaceItems: unknown[] = []
+
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => ({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          service: 'llm_workbench',
-          version: '0.1.0',
-          status: 'ok',
-          app: {
-            host: '127.0.0.1',
-            port: 3000,
-            app_data_dir: './data',
-          },
-          database: {
-            configured: false,
-            status: 'not_configured',
-          },
-        }),
-      })),
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input)
+        if (url.includes('/api/workspace/items')) {
+          return { ok: true, status: 200, json: async () => workspaceItems }
+        }
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            service: 'llm_workbench',
+            version: '0.1.0',
+            status: 'ok',
+            app: {
+              host: '127.0.0.1',
+              port: 3000,
+              app_data_dir: './data',
+            },
+            database: {
+              configured: false,
+              status: 'not_configured',
+            },
+          }),
+        }
+      }),
     )
 
     const wrapper = mount(WorkspaceShell, {

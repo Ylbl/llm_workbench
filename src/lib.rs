@@ -2,8 +2,10 @@ pub mod config;
 pub mod db;
 pub mod error;
 mod health;
+pub mod notes;
 pub mod settings;
 pub mod state;
+pub mod workspace;
 
 use axum::{Router, routing::get};
 use tokio::net::TcpListener;
@@ -19,6 +21,8 @@ pub fn build_router(state: AppState) -> Router {
     Router::new()
         .route("/api/health", get(health::health))
         .merge(settings::routes())
+        .merge(workspace::routes())
+        .merge(notes::routes())
         .fallback(error::not_found)
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())
