@@ -52,6 +52,8 @@ pub struct MessageEventRow {
 pub struct CreateConversationRequest {
     pub title: String,
     #[serde(default)]
+    pub workspace_item_id: Option<Uuid>,
+    #[serde(default)]
     pub parent_id: Option<Uuid>,
 }
 
@@ -284,16 +286,20 @@ async fn create_conversation_in_pool(
 ) -> Result<ConversationRow, ApiError> {
     validate_title(&req.title)?;
 
-    let workspace_item_id = sqlx::query_scalar::<_, Uuid>(
-        "INSERT INTO workspace_items (item_type, title, parent_id, sort_order, metadata)
-         VALUES ('chat', $1, $2, 0, '{}')
-         RETURNING id",
-    )
-    .bind(req.title.trim())
-    .bind(req.parent_id)
-    .fetch_one(pool)
-    .await
-    .map_err(ApiError::from)?;
+    let workspace_item_id = if let Some(wid) = req.workspace_item_id {
+        wid
+    } else {
+        sqlx::query_scalar::<_, Uuid>(
+            "INSERT INTO workspace_items (item_type, title, parent_id, sort_order, metadata)
+             VALUES ('chat', $1, $2, 0, '{}')
+             RETURNING id",
+        )
+        .bind(req.title.trim())
+        .bind(req.parent_id)
+        .fetch_one(pool)
+        .await
+        .map_err(ApiError::from)?
+    };
 
     let conv = sqlx::query_as::<_, ConversationRow>(
         "INSERT INTO conversations (workspace_item_id, title)

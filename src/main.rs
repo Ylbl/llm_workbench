@@ -1,7 +1,7 @@
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
-    llm_workbench::init_tracing();
+    let (_stdout_guard, _file_guard) = llm_workbench::init_tracing();
 
     let config = llm_workbench::AppConfig::from_env()?;
     let state = llm_workbench::AppState::from_config(config).await?;

@@ -26,7 +26,7 @@ export const useSettingsStore = defineStore('settings', {
       try {
         this.values = await fetchSettings()
       } catch (error) {
-        this.error = error instanceof Error ? error.message : 'Settings load failed'
+        this.error = error instanceof Error ? error.message : '设置加载失败'
       } finally {
         this.isLoading = false
       }
@@ -40,7 +40,7 @@ export const useSettingsStore = defineStore('settings', {
         this.values = await patchSettings(values)
         this.lastSavedAt = new Date().toLocaleTimeString()
       } catch (error) {
-        this.error = error instanceof Error ? error.message : 'Settings save failed'
+        this.error = error instanceof Error ? error.message : '设置保存失败'
         throw error
       } finally {
         this.isSaving = false

@@ -46,6 +46,8 @@ pub struct CreateAgentRequest {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
+    pub workspace_item_id: Option<Uuid>,
+    #[serde(default)]
     pub llm_request_profile_id: Option<Uuid>,
     #[serde(default)]
     pub system_prompt: Option<String>,
@@ -102,9 +104,13 @@ async fn create_agent(State(state): State<AppState>, Json(payload): Json<CreateA
     validate_name(&payload.name)?;
     let pool = state.database()?;
 
-    let workspace_item_id = sqlx::query_scalar::<_, Uuid>(
-        "INSERT INTO workspace_items (item_type, title, sort_order) VALUES ('agent_config', $1, 0) RETURNING id",
-    ).bind(payload.name.trim()).fetch_one(pool).await.map_err(ApiError::from)?;
+    let workspace_item_id = if let Some(wid) = payload.workspace_item_id {
+        wid
+    } else {
+        sqlx::query_scalar::<_, Uuid>(
+            "INSERT INTO workspace_items (item_type, title, sort_order) VALUES ('agent_config', $1, 0) RETURNING id",
+        ).bind(payload.name.trim()).fetch_one(pool).await.map_err(ApiError::from)?
+    };
 
     let tp = payload.tool_permissions.unwrap_or(serde_json::json!({}));
     let rc = payload.runtime_config.unwrap_or(serde_json::json!({}));

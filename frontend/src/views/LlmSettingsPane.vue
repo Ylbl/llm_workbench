@@ -231,7 +231,7 @@ onMounted(() => load())
           <h3>{{ editBlock.id ? '编辑' : '新建' }} 提示块</h3>
           <label>名称 <input v-model="editBlock.name" /></label>
           <div class="llm-row">
-            <label>类型 <select v-model="editBlock.block_type"><option>系统</option><option>用户</option><option>助手</option></select></label>
+            <label>类型 <select v-model="editBlock.block_type"><option value="system">系统</option><option value="user">用户</option><option value="assistant">助手</option></select></label>
             <label>排序 <input v-model.number="editBlock.sort_order" type="number" style="width:60px" /></label>
             <label><input type="checkbox" v-model="editBlock.enabled" /> 启用</label>
           </div>

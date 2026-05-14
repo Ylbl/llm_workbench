@@ -13,12 +13,12 @@ const newItemType = ref('note')
 const itemTypes = ['note', 'chat', 'agent_config', 'file', 'task', 'settings_view']
 
 const placeholderText: Record<string, string> = {
-  note: 'Note Editor (coming in Batch 4)',
-  chat: 'Chat Pane (coming in Batch 6)',
-  agent_config: 'Agent Config (coming in Batch 11)',
-  file: 'File Pane (coming in Batch 13)',
-  task: 'Task Pane (coming in Batch 14)',
-  settings_view: 'Settings View',
+  note: '笔记编辑器（批次 4 即将到来）',
+  chat: '聊天面板（批次 6 即将到来）',
+  agent_config: '代理配置（批次 11 即将到来）',
+  file: '文件面板（批次 13 即将到来）',
+  task: '任务面板（批次 14 即将到来）',
+  settings_view: '设置视图',
 }
 
 onMounted(() => {
@@ -67,9 +67,9 @@ const selectedItem = computed(() => store.selectedItem)
 <template>
   <section class="workspace-stage" aria-labelledby="workspace-stage-title">
     <div class="section-title-row">
-      <h2 id="workspace-stage-title">Workspace</h2>
+      <h2 id="workspace-stage-title">工作区</h2>
       <button class="create-button" type="button" @click="openCreateMenu(null)">
-        + New
+        + 新建
       </button>
     </div>
 
@@ -81,15 +81,15 @@ const selectedItem = computed(() => store.selectedItem)
         v-model="newItemTitle"
         class="create-input"
         type="text"
-        placeholder="Item title"
+        placeholder="项目标题"
         @keyup.enter="confirmCreate()"
       />
-      <button class="create-confirm" type="button" @click="confirmCreate()">Create</button>
-      <button class="create-cancel" type="button" @click="cancelCreate()">Cancel</button>
+      <button class="create-confirm" type="button" @click="confirmCreate()">创建</button>
+      <button class="create-cancel" type="button" @click="cancelCreate()">取消</button>
     </div>
 
     <div class="workspace-layout">
-      <nav class="workspace-tree-panel" aria-label="Workspace tree">
+      <nav class="workspace-tree-panel" aria-label="工作区树">
         <WorkspaceTree
           :items="store.items"
           :selectedId="store.selectedItemId"
@@ -101,7 +101,7 @@ const selectedItem = computed(() => store.selectedItem)
 
       <div class="workspace-content">
         <div v-if="!selectedItem" class="empty-state">
-          Select or create a workspace item
+          请选择或创建一个工作区项目
         </div>
 
         <div v-else class="item-pane">
@@ -112,15 +112,15 @@ const selectedItem = computed(() => store.selectedItem)
 
           <div class="item-pane-body">
             <div class="placeholder-pane">
-              <p>{{ placeholderText[selectedItem.item_type] ?? 'Unknown item type' }}</p>
+              <p>{{ placeholderText[selectedItem.item_type] ?? '未知项目类型' }}</p>
               <dl class="item-meta">
                 <dt>ID</dt>
                 <dd>{{ selectedItem.id }}</dd>
-                <dt>Type</dt>
+                <dt>类型</dt>
                 <dd>{{ selectedItem.item_type }}</dd>
-                <dt>Created</dt>
+                <dt>创建时间</dt>
                 <dd>{{ new Date(selectedItem.created_at).toLocaleString() }}</dd>
-                <dt>Updated</dt>
+                <dt>更新时间</dt>
                 <dd>{{ new Date(selectedItem.updated_at).toLocaleString() }}</dd>
               </dl>
             </div>

@@ -25,7 +25,7 @@ export const useHealthStore = defineStore('health', {
         this.data = await fetchHealth()
         this.lastCheckedAt = new Date().toLocaleTimeString()
       } catch (error) {
-        this.error = error instanceof Error ? error.message : 'Health check failed'
+        this.error = error instanceof Error ? error.message : '健康检查失败'
       } finally {
         this.isLoading = false
       }

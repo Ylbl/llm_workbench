@@ -41,7 +41,7 @@ export const useWorkspaceStore = defineStore('workspace', {
       try {
         this.items = await fetchWorkspaceItems()
       } catch (error) {
-        this.error = error instanceof Error ? error.message : 'Failed to load workspace items'
+        this.error = error instanceof Error ? error.message : '加载工作区项目失败'
       } finally {
         this.isLoading = false
       }
@@ -56,7 +56,7 @@ export const useWorkspaceStore = defineStore('workspace', {
         this.items.push(item)
         return item
       } catch (error) {
-        this.error = error instanceof Error ? error.message : 'Failed to create workspace item'
+        this.error = error instanceof Error ? error.message : '创建工作区项目失败'
         return null
       } finally {
         this.isSaving = false
@@ -75,7 +75,7 @@ export const useWorkspaceStore = defineStore('workspace', {
         }
         return item
       } catch (error) {
-        this.error = error instanceof Error ? error.message : 'Failed to update workspace item'
+        this.error = error instanceof Error ? error.message : '更新工作区项目失败'
         return null
       } finally {
         this.isSaving = false
@@ -94,7 +94,7 @@ export const useWorkspaceStore = defineStore('workspace', {
         }
         return true
       } catch (error) {
-        this.error = error instanceof Error ? error.message : 'Failed to delete workspace item'
+        this.error = error instanceof Error ? error.message : '删除工作区项目失败'
         return false
       } finally {
         this.isSaving = false

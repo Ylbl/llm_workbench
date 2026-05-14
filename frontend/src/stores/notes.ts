@@ -50,7 +50,7 @@ export const useNotesStore = defineStore('notes', {
       try {
         this.notes = await fetchNotes()
       } catch (e) {
-        this.error = e instanceof Error ? e.message : 'Failed to load notes'
+        this.error = e instanceof Error ? e.message : '加载笔记失败'
       } finally {
         this.isLoading = false
       }
@@ -64,7 +64,7 @@ export const useNotesStore = defineStore('notes', {
         this.notes.unshift(note)
         return note
       } catch (e) {
-        this.error = e instanceof Error ? e.message : 'Failed to create note'
+        this.error = e instanceof Error ? e.message : '创建笔记失败'
         return null
       } finally {
         this.isSaving = false
@@ -82,7 +82,7 @@ export const useNotesStore = defineStore('notes', {
         this.currentNoteId = id
         return note
       } catch (e) {
-        this.error = e instanceof Error ? e.message : 'Failed to load note'
+        this.error = e instanceof Error ? e.message : '加载单条笔记失败'
         return null
       } finally {
         this.isLoading = false
@@ -103,7 +103,7 @@ export const useNotesStore = defineStore('notes', {
         this.saveStatus = 'saved'
         return note
       } catch (e) {
-        this.error = e instanceof Error ? e.message : 'Failed to save note'
+        this.error = e instanceof Error ? e.message : '保存笔记失败'
         this.saveStatus = 'error'
         return null
       } finally {
@@ -119,7 +119,7 @@ export const useNotesStore = defineStore('notes', {
         if (this.currentNoteId === id) this.currentNoteId = null
         return true
       } catch (e) {
-        this.error = e instanceof Error ? e.message : 'Failed to delete note'
+        this.error = e instanceof Error ? e.message : '删除笔记失败'
         return false
       } finally {
         this.isSaving = false
@@ -131,7 +131,7 @@ export const useNotesStore = defineStore('notes', {
       try {
         this.revisions = await fetchNoteRevisions(noteId)
       } catch (e) {
-        this.error = e instanceof Error ? e.message : 'Failed to load revisions'
+        this.error = e instanceof Error ? e.message : '加载历史版本失败'
       } finally {
         this.isLoadingRevisions = false
       }
@@ -149,7 +149,7 @@ export const useNotesStore = defineStore('notes', {
         this.saveStatus = 'saved'
         return note
       } catch (e) {
-        this.error = e instanceof Error ? e.message : 'Failed to restore revision'
+        this.error = e instanceof Error ? e.message : '恢复历史版本失败'
         return null
       } finally {
         this.isSaving = false

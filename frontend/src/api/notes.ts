@@ -23,6 +23,7 @@ export interface NoteRevision {
 
 export interface CreateNoteRequest {
   title: string
+  workspace_item_id?: string | null
   parent_id?: string | null
   sort_order?: number
   document_json?: Record<string, unknown>
@@ -39,7 +40,7 @@ export async function fetchNotes(): Promise<Note[]> {
   const response = await fetch('/api/notes', {
     headers: { Accept: 'application/json' },
   })
-  if (!response.ok) throw new Error(`Notes fetch failed: ${response.status}`)
+  if (!response.ok) throw new Error(`笔记列表获取失败: ${response.status}`)
   return response.json()
 }
 
@@ -49,7 +50,7 @@ export async function createNote(req: CreateNoteRequest): Promise<Note> {
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
     body: JSON.stringify(req),
   })
-  if (!response.ok) throw new Error(`Note create failed: ${response.status}`)
+  if (!response.ok) throw new Error(`笔记创建失败: ${response.status}`)
   return response.json()
 }
 
@@ -57,7 +58,15 @@ export async function fetchNote(id: string): Promise<Note> {
   const response = await fetch(`/api/notes/${id}`, {
     headers: { Accept: 'application/json' },
   })
-  if (!response.ok) throw new Error(`Note fetch failed: ${response.status}`)
+  if (!response.ok) throw new Error(`笔记获取失败: ${response.status}`)
+  return response.json()
+}
+
+export async function fetchNoteByWorkspaceItem(workspaceItemId: string): Promise<Note> {
+  const response = await fetch(`/api/notes/workspace/${workspaceItemId}`, {
+    headers: { Accept: 'application/json' },
+  })
+  if (!response.ok) throw new Error(`笔记获取失败: ${response.status}`)
   return response.json()
 }
 
@@ -67,7 +76,7 @@ export async function updateNote(id: string, req: UpdateNoteRequest): Promise<No
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
     body: JSON.stringify(req),
   })
-  if (!response.ok) throw new Error(`Note update failed: ${response.status}`)
+  if (!response.ok) throw new Error(`笔记更新失败: ${response.status}`)
   return response.json()
 }
 
@@ -76,7 +85,7 @@ export async function deleteNote(id: string): Promise<void> {
     method: 'DELETE',
     headers: { Accept: 'application/json' },
   })
-  if (!response.ok) throw new Error(`Note delete failed: ${response.status}`)
+  if (!response.ok) throw new Error(`笔记删除失败: ${response.status}`)
 }
 
 export async function fetchNoteRevisions(
@@ -85,7 +94,7 @@ export async function fetchNoteRevisions(
   const response = await fetch(`/api/notes/${noteId}/revisions`, {
     headers: { Accept: 'application/json' },
   })
-  if (!response.ok) throw new Error(`Revisions fetch failed: ${response.status}`)
+  if (!response.ok) throw new Error(`修订记录获取失败: ${response.status}`)
   const payload = (await response.json()) as { revisions: NoteRevision[] }
   return payload.revisions
 }
@@ -98,6 +107,6 @@ export async function restoreNoteRevision(
     `/api/notes/${noteId}/revisions/${revisionId}/restore`,
     { method: 'POST', headers: { Accept: 'application/json' } },
   )
-  if (!response.ok) throw new Error(`Revision restore failed: ${response.status}`)
+  if (!response.ok) throw new Error(`修订恢复失败: ${response.status}`)
   return response.json()
 }

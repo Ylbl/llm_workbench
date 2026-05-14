@@ -9,6 +9,7 @@ import {
   type Message,
 } from '../api/chat'
 import { llmApi, type LlmRequestProfile, type PromptBlock } from '../api/llm'
+import { fetchAgents, type AgentConfig } from '../api/agents'
 import MixedContentRenderer from './MixedContentRenderer.vue'
 
 const props = defineProps<{
@@ -31,7 +32,7 @@ const profiles = ref<LlmRequestProfile[]>([])
 const selectedProfileId = ref<string>('')
 const promptBlocks = ref<PromptBlock[]>([])
 const selectedBlockIds = ref<string[]>([])
-const agents = ref<Array<{id:string;name:string;llm_request_profile_id:string|null;system_prompt:string|null;selected_prompt_block_ids:string[]}>>([])
+const agents = ref<AgentConfig[]>([])
 const selectedAgentId = ref<string>('')
 const systemPromptForRequest = ref<string | null>(null)
 
@@ -56,21 +57,21 @@ async function initChat() {
       fetchConversations(),
       llmApi.profiles.list().catch(() => [] as LlmRequestProfile[]),
       llmApi.promptBlocks.list().catch(() => [] as PromptBlock[]),
-      fetch('/api/agents', { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetchAgents().catch(() => [] as AgentConfig[]),
     ])
     profiles.value = p
     promptBlocks.value = blocks
-    agents.value = agentList as typeof agents.value
+    agents.value = agentList
     const existing = conversations.find((c) => c.workspace_item_id === props.workspaceItem.id)
     if (existing) {
       conversationId.value = existing.id
       await loadMessages(existing.id)
     } else {
-      const conv = await createConversation(props.workspaceItem.title)
+      const conv = await createConversation(props.workspaceItem.title, props.workspaceItem.id)
       conversationId.value = conv.id
     }
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to init chat'
+    error.value = e instanceof Error ? e.message : '初始化聊天失败'
   } finally {
     isLoading.value = false
   }
@@ -81,7 +82,7 @@ async function loadMessages(convId: string) {
     messages.value = await fetchMessages(convId)
     await scrollToBottom()
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to load messages'
+    error.value = e instanceof Error ? e.message : '加载消息失败'
   }
 }
 
@@ -106,7 +107,7 @@ async function sendMessage() {
       connectSSE(conversationId.value)
     }
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Send failed'
+    error.value = e instanceof Error ? e.message : '发送失败'
     isSending.value = false
   }
 }
@@ -131,14 +132,14 @@ async function sendRealStream() {
 
     if (!res.ok) {
       const errText = await res.text()
-      error.value = `Stream failed (${res.status}): ${errText.slice(0, 200)}`
+      error.value = `流失败 (${res.status}): ${errText.slice(0, 200)}`
       isStreaming.value = false
       isSending.value = false
       return
     }
 
     const reader = res.body?.getReader()
-    if (!reader) { error.value = 'No response body'; isStreaming.value = false; isSending.value = false; return }
+    if (!reader) { error.value = '无响应体'; isStreaming.value = false; isSending.value = false; return }
 
     const decoder = new TextDecoder()
     let buffer = ''
@@ -181,7 +182,7 @@ async function sendRealStream() {
       }
     }
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Stream error'
+    error.value = e instanceof Error ? e.message : '流错误'
   } finally {
     isStreaming.value = false
     isSending.value = false
@@ -284,12 +285,12 @@ onBeforeUnmount(() => disconnectSSE())
       </div>
 
       <div v-for="msg in messages" :key="msg.id" class="chat-message" :class="`chat-message--${msg.role}`">
-        <div class="chat-message-role">{{ msg.role }}</div>
+        <div class="chat-message-role">{{ msg.role === 'user' ? '用户' : msg.role === 'assistant' ? '助手' : msg.role === 'system' ? '系统' : msg.role }}</div>
         <div class="chat-message-content"><MixedContentRenderer :content="msg.content" /></div>
       </div>
 
       <div v-if="streamingContent" class="chat-message chat-message--assistant">
-        <div class="chat-message-role">assistant</div>
+        <div class="chat-message-role">助手</div>
         <div class="chat-message-content chat-message-streaming">
           <MixedContentRenderer :content="streamingContent" />
           <span class="streaming-cursor">|</span>
@@ -300,9 +301,9 @@ onBeforeUnmount(() => disconnectSSE())
     <div class="chat-composer">
       <textarea v-model="composerText" class="chat-composer-input" placeholder="输入消息，Enter 发送" rows="2"
         :disabled="isSending" @keydown="handleKeydown" />
-      <button class="chat-composer-send" :disabled="isSending || !composerText.trim()" @click="sendMessage()">
-        Send
-      </button>
+       <button class="chat-composer-send" :disabled="isSending || !composerText.trim()" @click="sendMessage()">
+          发送
+        </button>
     </div>
   </div>
 </template>

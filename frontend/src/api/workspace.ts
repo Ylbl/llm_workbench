@@ -30,7 +30,7 @@ export async function fetchWorkspaceItems(): Promise<WorkspaceItem[]> {
   })
 
   if (!response.ok) {
-    throw new Error(`Workspace items fetch failed with HTTP ${response.status}`)
+    throw new Error(`工作区项目列表获取失败 HTTP ${response.status}`)
   }
 
   return response.json() as Promise<WorkspaceItem[]>
@@ -46,7 +46,7 @@ export async function createWorkspaceItem(
   })
 
   if (!response.ok) {
-    throw new Error(`Workspace item create failed with HTTP ${response.status}`)
+    throw new Error(`工作区项目创建失败 HTTP ${response.status}`)
   }
 
   return response.json() as Promise<WorkspaceItem>
@@ -58,7 +58,7 @@ export async function fetchWorkspaceItem(id: string): Promise<WorkspaceItem> {
   })
 
   if (!response.ok) {
-    throw new Error(`Workspace item fetch failed with HTTP ${response.status}`)
+    throw new Error(`工作区项目获取失败 HTTP ${response.status}`)
   }
 
   return response.json() as Promise<WorkspaceItem>
@@ -75,7 +75,7 @@ export async function updateWorkspaceItem(
   })
 
   if (!response.ok) {
-    throw new Error(`Workspace item update failed with HTTP ${response.status}`)
+    throw new Error(`工作区项目更新失败 HTTP ${response.status}`)
   }
 
   return response.json() as Promise<WorkspaceItem>
@@ -88,6 +88,6 @@ export async function deleteWorkspaceItem(id: string): Promise<void> {
   })
 
   if (!response.ok) {
-    throw new Error(`Workspace item delete failed with HTTP ${response.status}`)
+    throw new Error(`工作区项目删除失败 HTTP ${response.status}`)
   }
 }

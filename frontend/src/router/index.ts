@@ -26,13 +26,11 @@ const router = createRouter({
     },
     {
       path: '/math-demo',
-      name: 'math-demo',
-      component: WorkspaceShell,
+      redirect: '/settings',
     },
     {
       path: '/llm-settings',
-      name: 'llm-settings',
-      component: WorkspaceShell,
+      redirect: '/settings',
     },
   ],
 })

@@ -17,22 +17,6 @@ const emit = defineEmits<{
   save: []
 }>()
 
-function insertInlineFormula() {
-  if (!editor.value) return
-  editor.value.chain().focus().insertContent({
-    type: 'inlineMath',
-    attrs: { latex: 'x=0' },
-  }).run()
-}
-
-function insertBlockFormula() {
-  if (!editor.value) return
-  editor.value.chain().focus().insertContent({
-    type: 'blockMath',
-    attrs: { latex: 'x = 0' },
-  }).run()
-}
-
 function handleMathEnter(): boolean {
   if (!editor.value) return false
 
@@ -183,27 +167,6 @@ defineExpose({ editor })
 
 <template>
   <div class="tiptap-wrapper">
-    <div v-if="editable !== false" class="tiptap-toolbar">
-      <button
-        class="toolbar-btn"
-        type="button"
-        title="插入行内公式"
-        @click="insertInlineFormula()"
-      >
-        $f$
-      </button>
-      <button
-        class="toolbar-btn"
-        type="button"
-        title="插入块公式"
-        @click="insertBlockFormula()"
-      >
-        $$f$$
-      </button>
-      <span class="toolbar-hint">
-        $...$ + Enter → inline math, $$...$$ + Enter → block, 点击公式可编辑
-      </span>
-    </div>
     <EditorContent :editor="editor" />
   </div>
 </template>
@@ -211,39 +174,6 @@ defineExpose({ editor })
 <style>
 .tiptap-wrapper {
   background: var(--surface, #fff);
-  border-radius: 6px;
-}
-
-.tiptap-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--border, #d9e1e8);
-  background: var(--surface-subtle, #f1f5f7);
-}
-
-.toolbar-btn {
-  padding: 4px 10px;
-  border: 1px solid var(--border, #d9e1e8);
-  border-radius: 4px;
-  background: var(--surface, #fff);
-  color: var(--text, #1e2933);
-  font-family: var(--font-mono, monospace);
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.toolbar-btn:hover {
-  background: var(--surface-subtle, #f1f5f7);
-  border-color: var(--accent, #0f766e);
-  color: var(--accent, #0f766e);
-}
-
-.toolbar-hint {
-  margin-left: 8px;
-  font-size: 11px;
-  color: var(--muted, #64707d);
 }
 
 .tiptap-editor {

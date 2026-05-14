@@ -40,6 +40,8 @@ pub struct NoteRevisionRow {
 pub struct CreateNoteRequest {
     pub title: String,
     #[serde(default)]
+    pub workspace_item_id: Option<Uuid>,
+    #[serde(default)]
     pub parent_id: Option<Uuid>,
     #[serde(default = "default_sort_order")]
     pub sort_order: i32,
@@ -133,6 +135,10 @@ pub fn routes() -> Router<AppState> {
             get(get_note).patch(update_note).delete(delete_note),
         )
         .route(
+            "/api/notes/workspace/{workspace_item_id}",
+            get(get_note_by_workspace_item),
+        )
+        .route(
             "/api/notes/{id}/revisions",
             get(list_note_revisions),
         )
@@ -162,6 +168,14 @@ async fn get_note(
     Path(id): Path<Uuid>,
 ) -> Result<Json<NoteRow>, ApiError> {
     let note = get_note_from_pool(state.database()?, id).await?;
+    Ok(Json(note))
+}
+
+async fn get_note_by_workspace_item(
+    State(state): State<AppState>,
+    Path(workspace_item_id): Path<Uuid>,
+) -> Result<Json<NoteRow>, ApiError> {
+    let note = get_note_by_workspace_item_from_pool(state.database()?, workspace_item_id).await?;
     Ok(Json(note))
 }
 
@@ -324,17 +338,21 @@ async fn create_note_in_pool(
     let plain_text = extract_plain_text(&document_json);
     let metadata = req.metadata.unwrap_or(serde_json::Value::Object(Default::default()));
 
-    let workspace_item_id = sqlx::query_scalar::<_, Uuid>(
-        "INSERT INTO workspace_items (item_type, title, parent_id, sort_order, metadata)
-         VALUES ('note', $1, $2, $3, '{}')
-         RETURNING id",
-    )
-    .bind(req.title.trim())
-    .bind(req.parent_id)
-    .bind(req.sort_order)
-    .fetch_one(pool)
-    .await
-    .map_err(ApiError::from)?;
+    let workspace_item_id = if let Some(wid) = req.workspace_item_id {
+        wid
+    } else {
+        sqlx::query_scalar::<_, Uuid>(
+            "INSERT INTO workspace_items (item_type, title, parent_id, sort_order, metadata)
+             VALUES ('note', $1, $2, $3, '{}')
+             RETURNING id",
+        )
+        .bind(req.title.trim())
+        .bind(req.parent_id)
+        .bind(req.sort_order)
+        .fetch_one(pool)
+        .await
+        .map_err(ApiError::from)?
+    };
 
     let note = sqlx::query_as::<_, NoteRow>(
         "INSERT INTO notes (workspace_item_id, title, document_json, plain_text, format, metadata)
@@ -401,62 +419,46 @@ async fn update_note_in_pool(
         None => existing.title,
     };
 
-    let document_json = match req.document_json {
-        Some(ref doc) => {
-            let plain_text = extract_plain_text(doc);
-
-            sqlx::query(
-                "INSERT INTO note_revisions (note_id, document_json, plain_text, reason, created_by)
-                 VALUES ($1, $2, $3, 'update', 'user')",
-            )
-            .bind(id)
-            .bind(&existing.document_json)
-            .bind(&existing.plain_text)
-            .execute(pool)
-            .await
-            .map_err(ApiError::from)?;
-
-            sqlx::query(
-                "UPDATE workspace_items SET title = $1, updated_at = now() WHERE id = $2",
-            )
-            .bind(&title)
-            .bind(existing.workspace_item_id)
-            .execute(pool)
-            .await
-            .map_err(ApiError::from)?;
-
-            let note = sqlx::query_as::<_, NoteRow>(
-                "UPDATE notes SET title = $1, document_json = $2, plain_text = $3, updated_at = now()
-                 WHERE id = $4
-                 RETURNING id, workspace_item_id, title, document_json, plain_text, format, metadata, created_at, updated_at",
-            )
-            .bind(&title)
-            .bind(doc)
-            .bind(&plain_text)
-            .bind(id)
-            .fetch_one(pool)
-            .await
-            .map_err(ApiError::from)?;
-
-            return Ok(note);
-        }
-        None => existing.document_json,
-    };
-
     let metadata = req.metadata.unwrap_or(existing.metadata);
 
-    if req.document_json.is_some() {
-        return Ok(NoteRow {
-            id,
-            workspace_item_id: existing.workspace_item_id,
-            title: title.clone(),
-            document_json: document_json.clone(),
-            plain_text: existing.plain_text.clone(),
-            format: existing.format.clone(),
-            metadata: metadata.clone(),
-            created_at: existing.created_at,
-            updated_at: chrono::Utc::now(),
-        });
+    if let Some(ref doc) = req.document_json {
+        let plain_text = extract_plain_text(doc);
+
+        sqlx::query(
+            "INSERT INTO note_revisions (note_id, document_json, plain_text, reason, created_by)
+             VALUES ($1, $2, $3, 'update', 'user')",
+        )
+        .bind(id)
+        .bind(&existing.document_json)
+        .bind(&existing.plain_text)
+        .execute(pool)
+        .await
+        .map_err(ApiError::from)?;
+
+        sqlx::query(
+            "UPDATE workspace_items SET title = $1, updated_at = now() WHERE id = $2",
+        )
+        .bind(&title)
+        .bind(existing.workspace_item_id)
+        .execute(pool)
+        .await
+        .map_err(ApiError::from)?;
+
+        let note = sqlx::query_as::<_, NoteRow>(
+            "UPDATE notes SET title = $1, document_json = $2, plain_text = $3, metadata = $4, updated_at = now()
+             WHERE id = $5
+             RETURNING id, workspace_item_id, title, document_json, plain_text, format, metadata, created_at, updated_at",
+        )
+        .bind(&title)
+        .bind(doc)
+        .bind(&plain_text)
+        .bind(&metadata)
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(ApiError::from)?;
+
+        return Ok(note);
     }
 
     sqlx::query(

@@ -12,7 +12,7 @@ export async function fetchSettings(): Promise<SettingsMap> {
   })
 
   if (!response.ok) {
-    throw new Error(`Settings load failed with HTTP ${response.status}`)
+    throw new Error(`设置加载失败 HTTP ${response.status}`)
   }
 
   const payload = (await response.json()) as SettingsResponse
@@ -30,7 +30,7 @@ export async function patchSettings(settings: SettingsMap): Promise<SettingsMap>
   })
 
   if (!response.ok) {
-    throw new Error(`Settings save failed with HTTP ${response.status}`)
+    throw new Error(`设置保存失败 HTTP ${response.status}`)
   }
 
   const payload = (await response.json()) as SettingsResponse

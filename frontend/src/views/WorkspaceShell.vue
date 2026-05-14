@@ -4,8 +4,6 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   Bell,
   Bot,
-  BookOpen,
-  Braces,
   Database,
   FilePlus2,
   FileText,
@@ -15,23 +13,22 @@ import {
   PanelLeftClose,
   PanelRightClose,
   RefreshCcw,
-  Search,
   Settings,
   Trash2,
-  Workflow,
 } from 'lucide-vue-next'
 import { useHealthStore } from '../stores/health'
 import { useWorkspaceStore } from '../stores/workspace'
 import type { WorkspaceItem } from '../api/workspace'
+import { createNote } from '../api/notes'
+import { createConversation } from '../api/chat'
+import { createAgent } from '../api/agents'
 import SettingsPane from './SettingsPane.vue'
-import LlmSettingsPane from './LlmSettingsPane.vue'
-import MathDemo from './MathDemo.vue'
 import NoteEditorPane from '../components/NoteEditorPane.vue'
 import ChatPane from '../components/ChatPane.vue'
 import AgentConfigPane from '../components/AgentConfigPane.vue'
 import { WbContextMenu, WbContextMenuItem, WbIconButton } from '../ui'
 
-type LeftTool = 'project' | 'settings' | 'llm' | 'math' | 'search'
+type LeftTool = 'project' | 'settings'
 type RightTool = 'outline' | 'notifications' | 'database'
 
 const health = useHealthStore()
@@ -85,8 +82,6 @@ const placeholderText: Record<string, string> = {
 }
 
 const isSettingsRoute = computed(() => route.name === 'settings')
-const isLlmRoute = computed(() => route.name === 'llm-settings')
-const isMathRoute = computed(() => route.name === 'math-demo')
 const isWorkspaceRoute = computed(
   () => route.name === 'workspace' || route.name === 'workspace-item',
 )
@@ -110,31 +105,6 @@ const statusMessage = computed(() => {
   if (health.isLoading) return '正在检查后端健康状态'
   if (health.data) return `${health.data.status} ${health.data.app.host}:${health.data.app.port}`
   return '后端健康状态未检查'
-})
-
-const editorTitle = computed(() => {
-  if (isSettingsRoute.value) return '设置'
-  if (isLlmRoute.value) return 'LLM 设置'
-  if (isMathRoute.value) return '数学演示'
-  return selectedItem.value?.title ?? '工作区'
-})
-
-const editorSubtitle = computed(() => {
-  if (isWorkspaceRoute.value && selectedItem.value) {
-    return itemTypeLabels[selectedItem.value.item_type] ?? selectedItem.value.item_type
-  }
-
-  if (isSettingsRoute.value) return '原始持久化 JSON'
-  if (isLlmRoute.value) return '服务商和请求配置'
-  if (isMathRoute.value) return '共享公式渲染器'
-  return '项目工作区'
-})
-
-const activeRouteLabel = computed(() => {
-  if (isSettingsRoute.value) return 'settings'
-  if (isLlmRoute.value) return 'llm'
-  if (isMathRoute.value) return 'math'
-  return 'workspace'
 })
 
 const outlineRows = computed(() => {
@@ -191,8 +161,6 @@ function selectLeftTool(tool: LeftTool) {
 
   if (tool === 'project') void router.push('/workspace')
   if (tool === 'settings') void router.push('/settings')
-  if (tool === 'llm') void router.push('/llm-settings')
-  if (tool === 'math') void router.push('/math-demo')
 }
 
 function selectRightTool(tool: RightTool) {
@@ -264,13 +232,23 @@ function getProjectContextParentId() {
 
 async function createProjectItem(itemType: 'note' | 'chat' | 'agent_config') {
   const label = itemTypeLabels[itemType] ?? itemType
-  const item = await workspace.createItem({
-    item_type: itemType,
-    title: `Untitled ${label}`,
-    parent_id: getProjectContextParentId(),
-  })
-  if (item) {
-    handleSelect(item.id)
+  const title = `未命名${label}`
+  const parentId = getProjectContextParentId()
+
+  try {
+    if (itemType === 'note') {
+      const note = await createNote({ title, parent_id: parentId, sort_order: 0 })
+      handleSelect(note.workspace_item_id)
+    } else if (itemType === 'chat') {
+      const conv = await createConversation(title)
+      handleSelect(conv.workspace_item_id)
+    } else {
+      const agent = await createAgent({ name: title })
+      handleSelect(agent.workspace_item_id!)
+    }
+    await workspace.loadItems()
+  } catch (e) {
+    console.error('Failed to create workspace item:', e)
   }
 }
 
@@ -282,8 +260,6 @@ async function deleteProjectContextTarget() {
 
 function syncToolFromRoute() {
   if (isSettingsRoute.value) activeLeftTool.value = 'settings'
-  else if (isLlmRoute.value) activeLeftTool.value = 'llm'
-  else if (isMathRoute.value) activeLeftTool.value = 'math'
   else activeLeftTool.value = 'project'
 }
 
@@ -335,30 +311,6 @@ watch(
         >
           <Settings :size="20" />
         </WbIconButton>
-        <WbIconButton
-          class="activity-button"
-          :active="activeLeftTool === 'llm' && leftPanelOpen"
-          title="LLM"
-          @click="selectLeftTool('llm')"
-        >
-          <Workflow :size="20" />
-        </WbIconButton>
-        <WbIconButton
-          class="activity-button"
-          :active="activeLeftTool === 'math' && leftPanelOpen"
-          title="数学"
-          @click="selectLeftTool('math')"
-        >
-          <Braces :size="20" />
-        </WbIconButton>
-        <WbIconButton
-          class="activity-button"
-          :active="activeLeftTool === 'search' && leftPanelOpen"
-          title="搜索"
-          @click="selectLeftTool('search')"
-        >
-          <Search :size="20" />
-        </WbIconButton>
       </aside>
 
       <aside
@@ -368,19 +320,7 @@ watch(
       >
         <div class="tool-window-header">
           <div>
-            <span class="tool-title">
-              {{
-                activeLeftTool === 'project'
-                  ? '项目'
-                  : activeLeftTool === 'settings'
-                    ? '设置'
-                    : activeLeftTool === 'llm'
-                      ? 'LLM'
-                      : activeLeftTool === 'math'
-                        ? '数学'
-                        : '搜索'
-              }}
-            </span>
+            <span class="tool-title">{{ activeLeftTool === 'project' ? '项目' : '设置' }}</span>
             <span class="tool-subtitle">llm_workbench</span>
           </div>
           <WbIconButton class="icon-button compact" size="compact" title="隐藏面板" @click="leftPanelOpen = false">
@@ -457,31 +397,9 @@ watch(
           </WbContextMenuItem>
         </WbContextMenu>
 
-        <div v-else-if="activeLeftTool === 'search'" class="aux-panel">
-          <input class="tool-search-input" type="search" placeholder="全局搜索" />
-          <div class="tool-empty">搜索功能占位</div>
-        </div>
-
         <div v-else class="aux-panel">
-          <RouterLink
-            class="tool-link"
-            :to="
-              activeLeftTool === 'settings'
-                ? '/settings'
-                : activeLeftTool === 'llm'
-                  ? '/llm-settings'
-                  : '/math-demo'
-            "
-          >
-            {{
-              activeLeftTool === 'settings'
-                ? '打开设置'
-                : activeLeftTool === 'llm'
-                  ? '打开 LLM 设置'
-                  : '打开数学演示'
-            }}
-          </RouterLink>
-          <div class="tool-empty">工具窗口内容可在此扩展</div>
+          <RouterLink class="tool-link" to="/settings">打开设置</RouterLink>
+          <div class="tool-empty">在中心面板中编辑设置</div>
         </div>
       </aside>
 
@@ -495,38 +413,8 @@ watch(
       ></div>
 
       <main class="editor-area">
-        <div class="editor-tabs">
-          <button class="editor-tab active" type="button">
-            <component
-              :is="
-                isSettingsRoute
-                  ? Settings
-                  : isLlmRoute
-                    ? Workflow
-                    : isMathRoute
-                      ? Braces
-                      : selectedItem?.item_type === 'chat'
-                        ? MessageSquareText
-                        : BookOpen
-              "
-              :size="15"
-            />
-            <span>{{ editorTitle }}</span>
-            <span class="tab-close">×</span>
-          </button>
-        </div>
-
-        <div class="editor-toolbar">
-          <span class="breadcrumb">
-            llm_workbench / {{ activeRouteLabel }} / {{ editorTitle }}
-          </span>
-          <span class="editor-context">{{ editorSubtitle }}</span>
-        </div>
-
         <section class="editor-surface" aria-label="Main editor">
           <SettingsPane v-if="isSettingsRoute" />
-          <LlmSettingsPane v-else-if="isLlmRoute" />
-          <MathDemo v-else-if="isMathRoute" />
 
           <template v-else-if="isWorkspaceRoute">
             <div v-if="!selectedItem" class="empty-state ide-empty">
@@ -583,7 +471,7 @@ watch(
                     : '数据库'
               }}
             </span>
-            <span class="tool-subtitle">{{ editorTitle }}</span>
+            <span class="tool-subtitle">{{ selectedItem?.title ?? '工作区' }}</span>
           </div>
           <WbIconButton class="icon-button compact" size="compact"           title="隐藏面板" @click="rightPanelOpen = false">
             <PanelRightClose :size="16" />
@@ -599,11 +487,11 @@ watch(
 
         <div v-else-if="activeRightTool === 'notifications'" class="notifications-panel">
           <div class="notice-card">
-            <span class="notice-title">Backend</span>
+            <span class="notice-title">后端</span>
             <span>{{ statusMessage }}</span>
           </div>
           <div class="notice-card">
-            <span class="notice-title">Database</span>
+            <span class="notice-title">数据库</span>
             <span>{{ databaseStatus }}</span>
           </div>
         </div>

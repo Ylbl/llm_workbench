@@ -68,8 +68,8 @@ describe('WorkspaceShell', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain('llm_workbench')
-    expect(wrapper.text()).toContain('Project')
-    expect(wrapper.text()).toContain('Outline')
+    expect(wrapper.text()).toContain('项目')
+    expect(wrapper.text()).toContain('大纲')
     expect(wrapper.find('.ide-topbar').exists()).toBe(false)
     expect(wrapper.find('.project-panel-actions').exists()).toBe(false)
     expect(wrapper.text()).toContain('ok')

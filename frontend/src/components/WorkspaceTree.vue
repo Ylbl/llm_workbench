@@ -34,18 +34,18 @@ function buildTree(items: WorkspaceItem[], parentId: string | null): TreeNode[] 
 }
 
 const itemTypeLabels: Record<string, string> = {
-  note: 'Note',
-  chat: 'Chat',
-  agent_config: 'Agent',
-  file: 'File',
-  task: 'Task',
-  settings_view: 'Settings',
+  note: '笔记',
+  chat: '聊天',
+  agent_config: '代理',
+  file: '文件',
+  task: '任务',
+  settings_view: '设置',
 }
 </script>
 
 <template>
-  <div class="workspace-tree" role="tree" aria-label="Workspace items">
-    <div v-if="tree.length === 0" class="tree-empty muted-label">No items</div>
+  <div class="workspace-tree" role="tree" aria-label="工作区项目">
+    <div v-if="tree.length === 0" class="tree-empty muted-label">暂无项目</div>
 
     <div v-for="node in tree" :key="node.item.id" class="tree-node">
       <button
@@ -62,7 +62,7 @@ const itemTypeLabels: Record<string, string> = {
         <button
           class="tree-item-delete"
           type="button"
-          title="Delete"
+          title="删除"
           @click.stop="emit('delete', node.item.id)"
         >
           &times;

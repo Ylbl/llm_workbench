@@ -33,11 +33,14 @@ export async function fetchConversations(): Promise<Conversation[]> {
   return res.json()
 }
 
-export async function createConversation(title: string): Promise<Conversation> {
+export async function createConversation(
+  title: string,
+  workspace_item_id?: string,
+): Promise<Conversation> {
   const res = await fetch('/api/conversations', {
     method: 'POST',
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title }),
+    body: JSON.stringify({ title, workspace_item_id }),
   })
   if (!res.ok) throw new Error(`Conversation create failed: ${res.status}`)
   return res.json()

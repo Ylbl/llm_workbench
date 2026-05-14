@@ -13,9 +13,14 @@ pub mod workspace;
 
 use axum::{Router, routing::get};
 use tokio::net::TcpListener;
-use tower_http::{cors::CorsLayer, trace::TraceLayer};
+use tower_http::{
+    cors::CorsLayer,
+    trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer},
+    LatencyUnit,
+};
 use tracing::info;
-use tracing_subscriber::EnvFilter;
+use tracing_appender::non_blocking::WorkerGuard;
+use tracing_subscriber::{EnvFilter, Layer, fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
 pub use config::AppConfig;
 pub use error::{ApiError, ErrorBody, ErrorResponse};
@@ -33,15 +38,66 @@ pub fn build_router(state: AppState) -> Router {
         .merge(agents::routes())
         .fallback(error::not_found)
         .layer(CorsLayer::permissive())
-        .layer(TraceLayer::new_for_http())
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(
+                    DefaultMakeSpan::new()
+                        .include_headers(false)
+                        .level(tracing::Level::INFO),
+                )
+                .on_request(
+                    DefaultOnRequest::new().level(tracing::Level::INFO),
+                )
+                .on_response(
+                    DefaultOnResponse::new()
+                        .level(tracing::Level::INFO)
+                        .latency_unit(LatencyUnit::Millis),
+                ),
+        )
         .with_state(state)
 }
 
-pub fn init_tracing() {
+pub fn init_tracing() -> (Option<WorkerGuard>, Option<WorkerGuard>) {
     let filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new("llm_workbench=debug,tower_http=info"));
+        .unwrap_or_else(|_| EnvFilter::new("llm_workbench=debug,tower_http=info,sqlx=warn"));
 
-    let _ = tracing_subscriber::fmt().with_env_filter(filter).try_init();
+    let env = std::env::var("APP_DATA_DIR").unwrap_or_else(|_| ".".to_string());
+    let log_dir = format!("{}/logs", env);
+
+    let (stdout_guard, file_guard) = if std::env::var("LOG_TO_FILE").unwrap_or_default() == "1" {
+        std::fs::create_dir_all(&log_dir).ok();
+
+        let file_appender = tracing_appender::rolling::daily(&log_dir, "llm_workbench.log");
+        let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
+
+        let stdout = fmt::layer()
+            .with_target(true)
+            .with_thread_ids(true)
+            .with_filter(filter.clone());
+
+        let file = fmt::layer()
+            .json()
+            .with_writer(non_blocking)
+            .with_filter(filter);
+
+        tracing_subscriber::registry()
+            .with(stdout)
+            .with(file)
+            .try_init()
+            .ok();
+
+        (None, Some(guard))
+    } else {
+        let stdout = fmt::layer()
+            .with_target(true)
+            .with_filter(filter);
+
+        tracing_subscriber::registry().with(stdout).try_init().ok();
+
+        (None, None)
+    };
+
+    (stdout_guard, file_guard)
 }
 
 pub async fn serve(state: AppState) -> std::io::Result<()> {
