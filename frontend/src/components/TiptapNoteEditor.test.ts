@@ -42,14 +42,14 @@ describe('TiptapNoteEditor', () => {
       props: { content: emptyDoc, editable: true },
     })
     expect(wrapper.find('.toolbar-hint').text()).toContain('Enter')
-    expect(wrapper.find('.toolbar-hint').text()).toContain('click')
+    expect(wrapper.find('.toolbar-hint').text()).toContain('点击')
   })
 
   it('emits update when toolbar button inserts formula', async () => {
     const wrapper = mount(TiptapNoteEditor, {
       props: { content: emptyDoc, editable: true },
     })
-    await wrapper.find('.toolbar-btn[title="Insert inline formula"]').trigger('click')
+    await wrapper.find('.toolbar-btn[title="插入行内公式"]').trigger('click')
     await flushPromises()
     expect(wrapper.emitted('update')).toBeTruthy()
   })

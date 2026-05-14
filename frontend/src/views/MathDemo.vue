@@ -7,8 +7,40 @@ const customLatex = ref('')
 
 const examples = [
   {
-    label: 'Inline $...$',
-    text: 'Einstein says $E = mc^2$ in his famous equation.',
+    label: '行内 $...$',
+    text: '爱因斯坦在他的著名方程中说 $E = mc^2$。',
+  },
+  {
+    label: '行内 \\(...\\)',
+    text: '二次公式 \\(x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\\) 很有用。',
+  },
+  {
+    label: '块级 $$...$$',
+    text: '一个著名的恒等式：\n\n$$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$\n\n这就是高斯积分。',
+  },
+  {
+    label: '块级 \\[...\\]',
+    text: '定义：\n\n\\[\\nabla \\cdot \\mathbf{E} = \\frac{\\rho}{\\varepsilon_0}\\]\n这是高斯定律。',
+  },
+  {
+    label: '混合行内',
+    text: '值：$\\alpha = 0.5$，$\\beta = \\sqrt{2}$，$\\gamma = \\frac{1}{3}$。完毕。',
+  },
+  {
+    label: '不完整（流式）',
+    text: '方程 $E = mc',
+  },
+  {
+    label: '无效 LaTeX',
+    text: '这是一个无效公式：$\\invalid{command$ 应该优雅地失败。',
+  },
+  {
+    label: '仅普通文本',
+    text: '这是没有任何公式的普通文本。',
+  },
+  {
+    label: '多个块级',
+    text: '第一个：\n\n$$a = b + c$$\n\n第二个：\n\n$$d = e \\cdot f$$',
   },
   {
     label: 'Inline \\(...\\)',
@@ -45,10 +77,10 @@ const examples = [
 ]
 
 const standaloneFormulas = [
-  { latex: 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}', displayMode: false, label: 'Inline' },
-  { latex: '\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}', displayMode: true, label: 'Block' },
-  { latex: '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}', displayMode: true, label: 'Matrix' },
-  { latex: '\\invalid{command', displayMode: false, label: 'Invalid fallback' },
+  { latex: 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}', displayMode: false, label: '行内' },
+  { latex: '\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}', displayMode: true, label: '块级' },
+  { latex: '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}', displayMode: true, label: '矩阵' },
+  { latex: '\\invalid{command', displayMode: false, label: '无效回退' },
 ]
 </script>
 
@@ -56,13 +88,13 @@ const standaloneFormulas = [
   <section class="math-demo">
     <div class="section-title-row">
       <div>
-        <h2>Math Rendering Demo</h2>
-        <p class="section-subtitle">Batch 3 — Shared Math Layer</p>
+        <h2>数学公式渲染演示</h2>
+        <p class="section-subtitle">批次 3 — 共享数学层</p>
       </div>
     </div>
 
     <div class="demo-section">
-      <h3>Standalone Formulas</h3>
+      <h3>独立公式</h3>
       <div class="demo-grid">
         <div v-for="formula in standaloneFormulas" :key="formula.label" class="demo-card">
           <div class="demo-card-label">{{ formula.label }}</div>
@@ -75,7 +107,7 @@ const standaloneFormulas = [
     </div>
 
     <div class="demo-section">
-      <h3>Mixed Content Rendering</h3>
+      <h3>混合内容渲染</h3>
       <div v-for="example in examples" :key="example.label" class="demo-example">
         <div class="demo-example-header">
           <span class="demo-example-label">{{ example.label }}</span>
@@ -90,11 +122,11 @@ const standaloneFormulas = [
     </div>
 
     <div class="demo-section">
-      <h3>Try Your Own</h3>
+      <h3>自行尝试</h3>
       <textarea
         v-model="customLatex"
         class="demo-input"
-        placeholder="Enter text with $formulas$ or $$display math$$"
+        placeholder="输入带 $公式$ 或 $$显示数学$$ 的文本"
         rows="4"
       />
       <div v-if="customLatex" class="demo-example-output" style="margin-top: 12px">

@@ -58,30 +58,30 @@ let activeResize:
   | null = null
 
 const itemTypeLabels: Record<string, string> = {
-  note: 'Note',
-  chat: 'Chat',
-  agent_config: 'Agent',
-  file: 'File',
-  task: 'Task',
-  settings_view: 'Settings',
+  note: '笔记',
+  chat: '聊天',
+  agent_config: '代理',
+  file: '文件',
+  task: '任务',
+  settings_view: '设置',
 }
 
 const itemTypeIcons: Record<string, string> = {
-  note: 'N',
-  chat: 'C',
-  agent_config: 'A',
-  file: 'F',
-  task: 'T',
-  settings_view: 'S',
+  note: '笔',
+  chat: '聊',
+  agent_config: '代',
+  file: '文',
+  task: '任',
+  settings_view: '设',
 }
 
 const placeholderText: Record<string, string> = {
-  note: 'Note Editor',
-  chat: 'Chat Pane',
-  agent_config: 'Agent Config',
-  file: 'File Pane (Batch 13)',
-  task: 'Task Pane (Batch 14)',
-  settings_view: 'Settings View',
+  note: '笔记编辑器',
+  chat: '聊天面板',
+  agent_config: '代理配置',
+  file: '文件面板（批次 13）',
+  task: '任务面板（批次 14）',
+  settings_view: '设置视图',
 }
 
 const isSettingsRoute = computed(() => route.name === 'settings')
@@ -107,16 +107,16 @@ const backendStatus = computed(() => {
 
 const statusMessage = computed(() => {
   if (health.error) return health.error
-  if (health.isLoading) return 'Checking backend health'
+  if (health.isLoading) return '正在检查后端健康状态'
   if (health.data) return `${health.data.status} ${health.data.app.host}:${health.data.app.port}`
-  return 'Backend health not checked'
+  return '后端健康状态未检查'
 })
 
 const editorTitle = computed(() => {
-  if (isSettingsRoute.value) return 'Settings'
-  if (isLlmRoute.value) return 'LLM Settings'
-  if (isMathRoute.value) return 'Math Demo'
-  return selectedItem.value?.title ?? 'Workspace'
+  if (isSettingsRoute.value) return '设置'
+  if (isLlmRoute.value) return 'LLM 设置'
+  if (isMathRoute.value) return '数学演示'
+  return selectedItem.value?.title ?? '工作区'
 })
 
 const editorSubtitle = computed(() => {
@@ -124,10 +124,10 @@ const editorSubtitle = computed(() => {
     return itemTypeLabels[selectedItem.value.item_type] ?? selectedItem.value.item_type
   }
 
-  if (isSettingsRoute.value) return 'Raw persisted JSON'
-  if (isLlmRoute.value) return 'Providers and request profiles'
-  if (isMathRoute.value) return 'Shared formula renderer'
-  return 'Project workspace'
+  if (isSettingsRoute.value) return '原始持久化 JSON'
+  if (isLlmRoute.value) return '服务商和请求配置'
+  if (isMathRoute.value) return '共享公式渲染器'
+  return '项目工作区'
 })
 
 const activeRouteLabel = computed(() => {
@@ -140,18 +140,18 @@ const activeRouteLabel = computed(() => {
 const outlineRows = computed(() => {
   if (!selectedItem.value) {
     return [
-      { label: 'Workspace', value: `${workspace.items.length} items` },
-      { label: 'Backend', value: backendStatus.value },
-      { label: 'Database', value: databaseStatus.value },
+      { label: '工作区', value: `${workspace.items.length} 个项目` },
+      { label: '后端', value: backendStatus.value },
+      { label: '数据库', value: databaseStatus.value },
     ]
   }
 
   return [
-    { label: 'Title', value: selectedItem.value.title },
-    { label: 'Type', value: selectedItem.value.item_type },
-    { label: 'Parent', value: selectedItem.value.parent_id ?? 'root' },
-    { label: 'Sort', value: String(selectedItem.value.sort_order) },
-    { label: 'Updated', value: new Date(selectedItem.value.updated_at).toLocaleString() },
+    { label: '标题', value: selectedItem.value.title },
+    { label: '类型', value: selectedItem.value.item_type },
+    { label: '父节点', value: selectedItem.value.parent_id ?? '根' },
+    { label: '排序', value: String(selectedItem.value.sort_order) },
+    { label: '更新时间', value: new Date(selectedItem.value.updated_at).toLocaleString() },
   ]
 })
 
@@ -322,7 +322,7 @@ watch(
         <WbIconButton
           class="activity-button"
           :active="activeLeftTool === 'project' && leftPanelOpen"
-          title="Project"
+          title="项目"
           @click="selectLeftTool('project')"
         >
           <Files :size="21" />
@@ -330,7 +330,7 @@ watch(
         <WbIconButton
           class="activity-button"
           :active="activeLeftTool === 'settings' && leftPanelOpen"
-          title="Settings"
+          title="设置"
           @click="selectLeftTool('settings')"
         >
           <Settings :size="20" />
@@ -346,7 +346,7 @@ watch(
         <WbIconButton
           class="activity-button"
           :active="activeLeftTool === 'math' && leftPanelOpen"
-          title="Math"
+          title="数学"
           @click="selectLeftTool('math')"
         >
           <Braces :size="20" />
@@ -354,7 +354,7 @@ watch(
         <WbIconButton
           class="activity-button"
           :active="activeLeftTool === 'search' && leftPanelOpen"
-          title="Search"
+          title="搜索"
           @click="selectLeftTool('search')"
         >
           <Search :size="20" />
@@ -371,19 +371,19 @@ watch(
             <span class="tool-title">
               {{
                 activeLeftTool === 'project'
-                  ? 'Project'
+                  ? '项目'
                   : activeLeftTool === 'settings'
-                    ? 'Settings'
+                    ? '设置'
                     : activeLeftTool === 'llm'
                       ? 'LLM'
                       : activeLeftTool === 'math'
-                        ? 'Math'
-                        : 'Search'
+                        ? '数学'
+                        : '搜索'
               }}
             </span>
             <span class="tool-subtitle">llm_workbench</span>
           </div>
-          <WbIconButton class="icon-button compact" size="compact" title="Hide tool window" @click="leftPanelOpen = false">
+          <WbIconButton class="icon-button compact" size="compact" title="隐藏面板" @click="leftPanelOpen = false">
             <PanelLeftClose :size="16" />
           </WbIconButton>
         </div>
@@ -392,7 +392,7 @@ watch(
           <template #trigger>
             <div class="project-panel" @contextmenu.capture="setProjectContextTarget(null)">
               <div v-if="rootItems.length === 0 && !workspace.isLoading" class="tool-empty">
-                No workspace items
+                无工作区项目
               </div>
 
               <div class="tree-list" role="tree">
@@ -433,33 +433,33 @@ watch(
             </div>
           </template>
 
-          <WbContextMenuItem @click="createProjectItem('note')">
+            <WbContextMenuItem @click="createProjectItem('note')">
             <FileText :size="15" />
-            New Note
+            新建笔记
           </WbContextMenuItem>
           <WbContextMenuItem @click="createProjectItem('chat')">
             <MessageSquareText :size="15" />
-            New Chat
+            新建聊天
           </WbContextMenuItem>
           <WbContextMenuItem @click="createProjectItem('agent_config')">
             <Bot :size="15" />
-            New Agent
+            新建代理
           </WbContextMenuItem>
           <div class="wb-menu-separator"></div>
           <WbContextMenuItem @click="workspace.loadItems()">
             <RefreshCcw :size="15" />
-            Refresh
+            刷新
           </WbContextMenuItem>
           <div class="wb-menu-separator"></div>
           <WbContextMenuItem :disabled="!projectContextTarget" @click="deleteProjectContextTarget()">
             <Trash2 :size="15" />
-            Delete
+            删除
           </WbContextMenuItem>
         </WbContextMenu>
 
         <div v-else-if="activeLeftTool === 'search'" class="aux-panel">
-          <input class="tool-search-input" type="search" placeholder="Search everywhere" />
-          <div class="tool-empty">Search UI placeholder</div>
+          <input class="tool-search-input" type="search" placeholder="全局搜索" />
+          <div class="tool-empty">搜索功能占位</div>
         </div>
 
         <div v-else class="aux-panel">
@@ -475,13 +475,13 @@ watch(
           >
             {{
               activeLeftTool === 'settings'
-                ? 'Open Settings'
+                ? '打开设置'
                 : activeLeftTool === 'llm'
-                  ? 'Open LLM Settings'
-                  : 'Open Math Demo'
+                  ? '打开 LLM 设置'
+                  : '打开数学演示'
             }}
           </RouterLink>
-          <div class="tool-empty">Tool window content can be expanded here</div>
+          <div class="tool-empty">工具窗口内容可在此扩展</div>
         </div>
       </aside>
 
@@ -490,7 +490,7 @@ watch(
         class="panel-resizer panel-resizer-left"
         role="separator"
         aria-orientation="vertical"
-        aria-label="Resize left sidebar"
+        aria-label="调整左侧边栏大小"
         @pointerdown="startPanelResize('left', $event)"
       ></div>
 
@@ -530,7 +530,7 @@ watch(
 
           <template v-else-if="isWorkspaceRoute">
             <div v-if="!selectedItem" class="empty-state ide-empty">
-              Select or create a workspace item
+              请选择或创建一个工作区项目
             </div>
 
             <template v-else-if="selectedItem.item_type === 'note'">
@@ -548,9 +548,9 @@ watch(
                   <FilePlus2 :size="32" />
                 </div>
                 <h2>{{ itemTypeLabels[selectedItem.item_type] ?? selectedItem.item_type }}</h2>
-                <p>{{ placeholderText[selectedItem.item_type] ?? 'Unknown item type' }}</p>
+                <p>{{ placeholderText[selectedItem.item_type] ?? '未知项目类型' }}</p>
                 <button class="secondary-button" type="button" @click="handleDelete(selectedItem.id)">
-                  Delete item
+                  删除项目
                 </button>
               </div>
             </template>
@@ -563,7 +563,7 @@ watch(
         class="panel-resizer panel-resizer-right"
         role="separator"
         aria-orientation="vertical"
-        aria-label="Resize right sidebar"
+        aria-label="调整右侧边栏大小"
         @pointerdown="startPanelResize('right', $event)"
       ></div>
 
@@ -577,15 +577,15 @@ watch(
             <span class="tool-title">
               {{
                 activeRightTool === 'outline'
-                  ? 'Outline'
+                  ? '大纲'
                   : activeRightTool === 'notifications'
-                    ? 'Notifications'
-                    : 'Database'
+                    ? '通知'
+                    : '数据库'
               }}
             </span>
             <span class="tool-subtitle">{{ editorTitle }}</span>
           </div>
-          <WbIconButton class="icon-button compact" size="compact" title="Hide tool window" @click="rightPanelOpen = false">
+          <WbIconButton class="icon-button compact" size="compact"           title="隐藏面板" @click="rightPanelOpen = false">
             <PanelRightClose :size="16" />
           </WbIconButton>
         </div>
@@ -622,7 +622,7 @@ watch(
         <WbIconButton
           class="activity-button"
           :active="activeRightTool === 'outline' && rightPanelOpen"
-          title="Outline"
+          title="大纲"
           @click="selectRightTool('outline')"
         >
           <ListTree :size="20" />
@@ -630,7 +630,7 @@ watch(
         <WbIconButton
           class="activity-button"
           :active="activeRightTool === 'notifications' && rightPanelOpen"
-          title="Notifications"
+          title="通知"
           @click="selectRightTool('notifications')"
         >
           <Bell :size="20" />
@@ -638,7 +638,7 @@ watch(
         <WbIconButton
           class="activity-button"
           :active="activeRightTool === 'database' && rightPanelOpen"
-          title="Database"
+          title="数据库"
           @click="selectRightTool('database')"
         >
           <Database :size="20" />
@@ -647,13 +647,13 @@ watch(
     </div>
 
     <footer class="ide-statusbar" role="status" aria-live="polite">
-      <span>Database: {{ databaseStatus }}</span>
-      <span>Backend: {{ backendStatus }}</span>
-      <span v-if="health.lastCheckedAt">Last check {{ health.lastCheckedAt }}</span>
+      <span>数据库: {{ databaseStatus }}</span>
+      <span>后端: {{ backendStatus }}</span>
+      <span v-if="health.lastCheckedAt">上次检查 {{ health.lastCheckedAt }}</span>
       <span>UTF-8</span>
       <span>LF</span>
       <span>Cargo Check</span>
-      <span class="status-good">No auth</span>
+      <span class="status-good">无需认证</span>
     </footer>
   </div>
 </template>

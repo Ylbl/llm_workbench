@@ -67,8 +67,8 @@ async function saveProfile() {
   try {
     let baseBody = {}
     let headers = {}
-    try { baseBody = JSON.parse(baseBodyJson.value) } catch { throw new Error('Invalid base_body JSON') }
-    try { headers = JSON.parse(headersJson.value) } catch { throw new Error('Invalid headers JSON') }
+    try { baseBody = JSON.parse(baseBodyJson.value) } catch { throw new Error('请求体 JSON 格式无效') }
+    try { headers = JSON.parse(headersJson.value) } catch { throw new Error('请求头 JSON 格式无效') }
     const data = { ...editProfile.value, base_body: baseBody, headers }
     if (editProfile.value.id) {
       await llmApi.profiles.update(editProfile.value.id, data)
@@ -125,48 +125,48 @@ onMounted(() => load())
 
 <template>
   <div class="llm-settings">
-    <h2>LLM Settings</h2>
+    <h2>LLM 设置</h2>
 
     <div v-if="error" class="llm-error">{{ error }} <button @click="error=null">&times;</button></div>
 
     <div class="llm-tabs">
-      <button :class="{ active: activeTab==='providers' }" @click="activeTab='providers'">Providers</button>
-      <button :class="{ active: activeTab==='profiles' }" @click="activeTab='profiles'">Profiles</button>
-      <button :class="{ active: activeTab==='blocks' }" @click="activeTab='blocks'">Prompt Blocks</button>
+      <button :class="{ active: activeTab==='providers' }" @click="activeTab='providers'">服务商</button>
+      <button :class="{ active: activeTab==='profiles' }" @click="activeTab='profiles'">请求配置</button>
+      <button :class="{ active: activeTab==='blocks' }" @click="activeTab='blocks'">提示块</button>
     </div>
 
     <div v-if="activeTab==='providers'" class="llm-section">
-      <button class="llm-add" @click="openProvider()">+ Add Provider</button>
+      <button class="llm-add" @click="openProvider()">+ 添加服务商</button>
       <div v-for="p in providers" :key="p.id" class="llm-card">
         <div class="llm-card-header">
           <strong>{{ p.name }}</strong>
-          <span :class="p.enabled?'enabled':'disabled'">{{ p.enabled ? 'Active' : 'Disabled' }}</span>
+          <span :class="p.enabled?'enabled':'disabled'">{{ p.enabled ? '启用' : '禁用' }}</span>
         </div>
         <div class="llm-card-meta">{{ p.base_url }}</div>
-        <div class="llm-card-meta" v-if="p.default_model">Default: {{ p.default_model }}</div>
+        <div class="llm-card-meta" v-if="p.default_model">默认: {{ p.default_model }}</div>
         <div class="llm-card-actions">
-          <button @click="openProvider(p)">Edit</button>
-          <button class="danger" @click="deleteProvider(p.id)">Delete</button>
+          <button @click="openProvider(p)">编辑</button>
+          <button class="danger" @click="deleteProvider(p.id)">删除</button>
         </div>
       </div>
 
       <div v-if="showProviderEditor" class="llm-editor-overlay" @click.self="showProviderEditor=false">
         <div class="llm-editor">
-          <h3>{{ editProvider.id ? 'Edit' : 'New' }} Provider</h3>
-          <label>Name <input v-model="editProvider.name" /></label>
-          <label>Base URL <input v-model="editProvider.base_url" /></label>
-          <label>API Key <input v-model="editProvider.api_key" type="password" /></label>
-          <label>Default Model <input v-model="editProvider.default_model" /></label>
+          <h3>{{ editProvider.id ? '编辑' : '新建' }} 服务商</h3>
+          <label>名称 <input v-model="editProvider.name" /></label>
+          <label>基础地址 <input v-model="editProvider.base_url" /></label>
+          <label>API 密钥 <input v-model="editProvider.api_key" type="password" /></label>
+          <label>默认模型 <input v-model="editProvider.default_model" /></label>
           <div class="llm-editor-actions">
-            <button @click="saveProvider()">Save</button>
-            <button @click="showProviderEditor=false">Cancel</button>
+            <button @click="saveProvider()">保存</button>
+            <button @click="showProviderEditor=false">取消</button>
           </div>
         </div>
       </div>
     </div>
 
     <div v-if="activeTab==='profiles'" class="llm-section">
-      <button class="llm-add" @click="openProfile()">+ Add Profile</button>
+      <button class="llm-add" @click="openProfile()">+ 添加配置</button>
       <div v-for="p in profiles" :key="p.id" class="llm-card">
         <div class="llm-card-header">
           <strong>{{ p.name }}</strong>
@@ -174,9 +174,9 @@ onMounted(() => load())
         </div>
         <pre class="llm-card-json">{{ JSON.stringify(p.base_body, null, 2) }}</pre>
         <div class="llm-card-actions">
-          <button @click="openProfile(p)">Edit</button>
-          <button class="test" @click="testProfile(p.id)">Test</button>
-          <button class="danger" @click="deleteProfile(p.id)">Delete</button>
+          <button @click="openProfile(p)">编辑</button>
+          <button class="test" @click="testProfile(p.id)">测试</button>
+          <button class="danger" @click="deleteProfile(p.id)">删除</button>
         </div>
 
         <div v-if="testResult && testResult.request === JSON.stringify(p.base_body, null, 2).replace(/\s/g, '')" class="llm-test-result" style="display:none"></div>
@@ -184,37 +184,37 @@ onMounted(() => load())
 
       <div v-if="showProfileEditor" class="llm-editor-overlay" @click.self="showProfileEditor=false">
         <div class="llm-editor llm-editor-wide">
-          <h3>{{ editProfile.id ? 'Edit' : 'New' }} Profile</h3>
-          <label>Name <input v-model="editProfile.name" /></label>
+          <h3>{{ editProfile.id ? '编辑' : '新建' }} 请求配置</h3>
+          <label>名称 <input v-model="editProfile.name" /></label>
           <div class="llm-row">
-            <label>Method <input v-model="editProfile.method" style="width:80px" /></label>
-            <label>Endpoint <input v-model="editProfile.endpoint_path" style="flex:1" /></label>
+            <label>方法 <input v-model="editProfile.method" style="width:80px" /></label>
+            <label>端点 <input v-model="editProfile.endpoint_path" style="flex:1" /></label>
           </div>
-          <label>Provider
+          <label>服务商
             <select v-model="editProfile.provider_id">
-              <option :value="null">None</option>
+              <option :value="null">无</option>
               <option v-for="p in providers" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select>
           </label>
-          <label>Message Injection
+          <label>消息注入
             <select v-model="editProfile.message_injection_mode">
               <option value="replace_messages">replace_messages</option>
             </select>
           </label>
-          <label>Base Body (JSON)</label>
+          <label>请求体 (JSON)</label>
           <textarea v-model="baseBodyJson" class="llm-json-editor" rows="12" spellcheck="false" />
-          <label>Headers (JSON)</label>
+          <label>请求头 (JSON)</label>
           <textarea v-model="headersJson" class="llm-json-editor" rows="4" spellcheck="false" />
           <div class="llm-editor-actions">
-            <button @click="saveProfile()">Save</button>
-            <button @click="showProfileEditor=false">Cancel</button>
+            <button @click="saveProfile()">保存</button>
+            <button @click="showProfileEditor=false">取消</button>
           </div>
         </div>
       </div>
     </div>
 
     <div v-if="activeTab==='blocks'" class="llm-section">
-      <button class="llm-add" @click="openBlock()">+ Add Block</button>
+      <button class="llm-add" @click="openBlock()">+ 添加提示块</button>
       <div v-for="b in blocks" :key="b.id" class="llm-card">
         <div class="llm-card-header">
           <strong>{{ b.name }}</strong>
@@ -222,38 +222,38 @@ onMounted(() => load())
         </div>
         <pre class="llm-card-json">{{ b.content.slice(0, 300) }}{{ b.content.length > 300 ? '...' : '' }}</pre>
         <div class="llm-card-actions">
-          <button @click="openBlock(b)">Edit</button>
-          <button class="danger" @click="deleteBlock(b.id)">Delete</button>
+          <button @click="openBlock(b)">编辑</button>
+          <button class="danger" @click="deleteBlock(b.id)">删除</button>
         </div>
       </div>
       <div v-if="showBlockEditor" class="llm-editor-overlay" @click.self="showBlockEditor=false">
         <div class="llm-editor llm-editor-wide">
-          <h3>{{ editBlock.id ? 'Edit' : 'New' }} Block</h3>
-          <label>Name <input v-model="editBlock.name" /></label>
+          <h3>{{ editBlock.id ? '编辑' : '新建' }} 提示块</h3>
+          <label>名称 <input v-model="editBlock.name" /></label>
           <div class="llm-row">
-            <label>Type <select v-model="editBlock.block_type"><option>system</option><option>user</option><option>assistant</option></select></label>
-            <label>Sort <input v-model.number="editBlock.sort_order" type="number" style="width:60px" /></label>
-            <label><input type="checkbox" v-model="editBlock.enabled" /> Enabled</label>
+            <label>类型 <select v-model="editBlock.block_type"><option>系统</option><option>用户</option><option>助手</option></select></label>
+            <label>排序 <input v-model.number="editBlock.sort_order" type="number" style="width:60px" /></label>
+            <label><input type="checkbox" v-model="editBlock.enabled" /> 启用</label>
           </div>
-          <label>Content</label>
+          <label>内容</label>
           <textarea v-model="editBlock.content" class="llm-json-editor" rows="8" spellcheck="false" />
           <div class="llm-editor-actions">
-            <button @click="saveBlock()">Save</button>
-            <button @click="showBlockEditor=false">Cancel</button>
+            <button @click="saveBlock()">保存</button>
+            <button @click="showBlockEditor=false">取消</button>
           </div>
         </div>
       </div>
     </div>
 
     <div v-if="testResult" class="llm-test-result">
-      <h3>Test Result</h3>
+      <h3>测试结果</h3>
       <div class="llm-test-split">
         <div>
-          <strong>Request</strong>
+          <strong>请求</strong>
           <pre>{{ JSON.stringify(testResult.request, null, 2) }}</pre>
         </div>
         <div>
-          <strong>Response</strong>
+          <strong>响应</strong>
           <pre>{{ JSON.stringify(testResult.response || testResult.error, null, 2) }}</pre>
         </div>
       </div>

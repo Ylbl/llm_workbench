@@ -124,7 +124,7 @@ onUnmounted(() => {
           v-model="noteTitle"
           class="note-title-input"
           type="text"
-          placeholder="Note title"
+          placeholder="笔记标题"
           @change="scheduleAutoSave()"
         />
       </div>
@@ -154,7 +154,7 @@ onUnmounted(() => {
           type="button"
           @click="loadRevisions()"
         >
-          {{ showRevisions ? 'Hide Revisions' : 'Revisions' }}
+          {{ showRevisions ? '隐藏版本' : 'Revisions' }}
         </button>
       </div>
     </div>
@@ -164,7 +164,7 @@ onUnmounted(() => {
     </div>
 
     <div v-if="notesStore.isLoading && !note" class="note-loading">
-      Loading note...
+      加载中...
     </div>
 
     <TiptapNoteEditor
@@ -176,7 +176,7 @@ onUnmounted(() => {
     />
 
     <div v-if="showRevisions && notesStore.revisions.length > 0" class="note-revisions">
-      <h3 class="revisions-title">Revisions</h3>
+      <h3 class="revisions-title">历史版本</h3>
       <div
         v-for="rev in notesStore.revisions"
         :key="rev.id"
@@ -200,7 +200,7 @@ onUnmounted(() => {
       </div>
     </div>
     <div v-else-if="showRevisions" class="note-revisions">
-      <p class="muted-label">No revisions yet</p>
+      <p class="muted-label">暂无历史版本</p>
     </div>
   </div>
 </template>

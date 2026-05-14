@@ -105,7 +105,7 @@ const editor = useEditor({
       },
     }),
     Placeholder.configure({
-      placeholder: 'Start writing your note...',
+      placeholder: '开始写笔记...',
     }),
   ],
   onUpdate: () => {
@@ -187,7 +187,7 @@ defineExpose({ editor })
       <button
         class="toolbar-btn"
         type="button"
-        title="Insert inline formula"
+        title="插入行内公式"
         @click="insertInlineFormula()"
       >
         $f$
@@ -195,13 +195,13 @@ defineExpose({ editor })
       <button
         class="toolbar-btn"
         type="button"
-        title="Insert block formula"
+        title="插入块公式"
         @click="insertBlockFormula()"
       >
         $$f$$
       </button>
       <span class="toolbar-hint">
-        $...$ + Enter → inline math, $$...$$ + Enter → block, click formula to edit
+        $...$ + Enter → inline math, $$...$$ + Enter → block, 点击公式可编辑
       </span>
     </div>
     <EditorContent :editor="editor" />

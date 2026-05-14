@@ -257,22 +257,22 @@ onBeforeUnmount(() => disconnectSSE())
     <div class="chat-header">
       <h3 class="chat-title">{{ conversationTitle }}</h3>
       <select v-model="selectedProfileId" class="chat-profile-select">
-        <option value="">Mock Stream</option>
+        <option value="">模拟流</option>
         <option v-for="p in profiles" :key="p.id" :value="p.id">{{ p.name }}</option>
       </select>
       <select v-model="selectedAgentId" class="chat-profile-select">
-        <option value="">No Agent</option>
+        <option value="">无代理</option>
         <option v-for="a in agents" :key="a.id" :value="a.id">{{ a.name }}</option>
       </select>
       <div v-if="promptBlocks.length > 0" class="chat-blocks">
-        <span class="chat-blocks-label">Blocks:</span>
+        <span class="chat-blocks-label">提示块:</span>
         <label v-for="b in promptBlocks" :key="b.id" class="chat-block-item">
           <input type="checkbox" :value="b.id" v-model="selectedBlockIds" />
           {{ b.name }}
         </label>
       </div>
       <span v-if="isStreaming" class="chat-status" style="color: var(--accent)">
-        {{ selectedProfileId ? 'LLM Streaming...' : 'Streaming...' }}
+        {{ selectedProfileId ? 'LLM 流式中...' : '模拟流中...' }}
       </span>
     </div>
 
@@ -280,7 +280,7 @@ onBeforeUnmount(() => disconnectSSE())
 
     <div ref="scrollRef" class="chat-messages">
       <div v-if="messages.length===0 && !isStreaming && !isLoading" class="chat-empty">
-        Send a message to start.
+        发送消息开始对话
       </div>
 
       <div v-for="msg in messages" :key="msg.id" class="chat-message" :class="`chat-message--${msg.role}`">
@@ -298,7 +298,7 @@ onBeforeUnmount(() => disconnectSSE())
     </div>
 
     <div class="chat-composer">
-      <textarea v-model="composerText" class="chat-composer-input" placeholder="Enter to send" rows="2"
+      <textarea v-model="composerText" class="chat-composer-input" placeholder="输入消息，Enter 发送" rows="2"
         :disabled="isSending" @keydown="handleKeydown" />
       <button class="chat-composer-send" :disabled="isSending || !composerText.trim()" @click="sendMessage()">
         Send

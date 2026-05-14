@@ -96,17 +96,17 @@ onMounted(() => load())
 <template>
   <div class="agent-pane">
     <div class="agent-header">
-      <h3>Agent Config</h3>
+      <h3>代理配置</h3>
       <span class="muted-label">{{ workspaceItem.title }}</span>
       <div style="margin-left:auto;display:flex;gap:8px">
-        <button class="primary-button" :disabled="isSaving" @click="save()">{{ isSaving ? 'Saving...' : 'Save' }}</button>
+        <button class="primary-button" :disabled="isSaving" @click="save()">{{ isSaving ? '保存中...' : 'Save' }}</button>
         <button class="secondary-button" @click="run()" :disabled="isRunning">{{ isRunning ? 'Running...' : 'Run' }}</button>
       </div>
     </div>
-    <div v-if="error" class="chat-error"><strong>Error:</strong> {{ error }}</div>
-    <div v-if="isRunning" class="agent-result"><em>Running agent, waiting for response...</em></div>
+    <div v-if="error" class="chat-error"><strong>错误：</strong> {{ error }}</div>
+    <div v-if="isRunning" class="agent-result"><em>正在执行代理，等待响应...</em></div>
     <div v-else-if="runResult" class="agent-result">
-      <strong>Result:</strong>
+      <strong>结果：</strong>
       <pre>{{ runResult }}</pre>
     </div>
     <div v-else class="agent-result agent-result-placeholder">
@@ -115,26 +115,26 @@ onMounted(() => load())
     <div class="agent-form">
       <label>Name <input v-model="agent.name" /></label>
       <label>Description <input v-model="agent.description" /></label>
-      <label>Request Profile
+      <label>请求配置
         <select v-model="agent.llm_request_profile_id">
-          <option :value="null">None</option>
+          <option :value="null">无</option>
           <option v-for="p in profiles" :key="p.id" :value="p.id">{{ p.name }}</option>
         </select>
       </label>
-      <label>System Prompt
+      <label>系统提示词
         <textarea v-model="agent.system_prompt" rows="4" class="agent-textarea" />
       </label>
-      <label>Default Prompt Blocks
+      <label>默认提示块
         <div class="agent-blocks">
           <label v-for="b in blocks" :key="b.id" class="chat-block-item">
             <input type="checkbox" :value="b.id" v-model="agent.selected_prompt_block_ids" /> {{ b.name }}
           </label>
         </div>
       </label>
-      <label>Tool Permissions (JSON)
+      <label>工具权限 (JSON)
         <textarea v-model="agent.tool_permissions" rows="4" class="agent-json" spellcheck="false" />
       </label>
-      <label>Runtime Config (JSON)
+      <label>运行时配置 (JSON)
         <textarea v-model="agent.runtime_config" rows="4" class="agent-json" spellcheck="false" />
       </label>
     </div>

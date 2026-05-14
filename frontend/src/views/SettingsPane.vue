@@ -17,18 +17,18 @@ const status = computed(() => {
   }
 
   if (settings.isLoading) {
-    return 'Loading settings'
+    return '加载中'
   }
 
   if (settings.isSaving) {
-    return 'Saving settings'
+    return '保存中'
   }
 
   if (settings.lastSavedAt) {
-    return `Saved at ${settings.lastSavedAt}`
+    return `上次保存: ${settings.lastSavedAt}`
   }
 
-  return 'Settings ready'
+  return '就绪'
 })
 
 watch(
@@ -52,12 +52,12 @@ async function saveSettings() {
   try {
     parsed = JSON.parse(rawJson.value)
   } catch (error) {
-    localError.value = error instanceof Error ? error.message : 'Invalid JSON'
+    localError.value = error instanceof Error ? error.message : 'JSON 格式无效'
     return
   }
 
   if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
-    localError.value = 'Settings JSON must be an object'
+    localError.value = '设置必须是 JSON 对象'
     return
   }
 
@@ -73,15 +73,15 @@ onMounted(() => {
   <section class="settings-pane" aria-labelledby="settings-title">
     <div class="section-title-row">
       <div>
-        <h2 id="settings-title">Settings JSON</h2>
-        <p class="section-subtitle">Raw persisted settings object</p>
+        <h2 id="settings-title">设置 JSON</h2>
+        <p class="section-subtitle">原始持久化设置</p>
       </div>
       <div class="settings-actions">
         <button class="secondary-button" type="button" :disabled="settings.isLoading" @click="loadSettings">
-          Reload
+          重新加载
         </button>
         <button class="primary-button" type="button" :disabled="settings.isSaving" @click="saveSettings">
-          {{ settings.isSaving ? 'Saving' : 'Save' }}
+          {{ settings.isSaving ? '保存中' : '保存' }}
         </button>
       </div>
     </div>
@@ -90,7 +90,7 @@ onMounted(() => {
       v-model="rawJson"
       class="json-editor"
       spellcheck="false"
-      aria-label="Settings JSON editor"
+      aria-label="设置 JSON 编辑器"
     ></textarea>
 
     <div class="inline-status" :class="{ 'text-error': localError || settings.error }" role="status">
