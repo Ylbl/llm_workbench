@@ -1,0 +1,6 @@
+export { default as WbButton } from './WbButton.vue'
+export { default as WbContextMenu } from './WbContextMenu.vue'
+export { default as WbContextMenuItem } from './WbContextMenuItem.vue'
+export { default as WbDropdownMenu } from './WbDropdownMenu.vue'
+export { default as WbIconButton } from './WbIconButton.vue'
+export { default as WbMenuItem } from './WbMenuItem.vue'

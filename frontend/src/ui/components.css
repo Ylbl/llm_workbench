@@ -1,0 +1,119 @@
+.wb-button,
+.wb-icon-button,
+.wb-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: var(--wb-radius-md);
+  color: var(--wb-text);
+  background: transparent;
+}
+
+.wb-button {
+  min-height: var(--wb-row-height);
+  padding: 0 10px;
+}
+
+.wb-button[data-variant='primary'] {
+  border-color: #2f8758;
+  color: #f5fff8;
+  background: var(--wb-success-bg);
+}
+
+.wb-button[data-variant='secondary'] {
+  border-color: var(--wb-border);
+  background: var(--wb-surface-raised);
+}
+
+.wb-button[data-variant='danger'] {
+  color: #fff;
+  background: var(--wb-danger-bg);
+}
+
+.wb-button[data-variant='ghost'] {
+  border-color: transparent;
+  background: transparent;
+}
+
+.wb-button[data-size='compact'] {
+  min-height: 26px;
+  padding: 0 8px;
+}
+
+.wb-icon-button,
+.wb-menu-trigger {
+  width: var(--wb-icon-button-size);
+  min-height: var(--wb-row-height);
+  padding: 0;
+}
+
+.wb-icon-button[data-size='compact'] {
+  width: 24px;
+  min-height: 24px;
+}
+
+.wb-icon-button[data-active='true'] {
+  color: #fff;
+  background: #3a414d;
+  box-shadow: inset 3px 0 0 var(--wb-accent);
+}
+
+.wb-button:hover:not(:disabled),
+.wb-icon-button:hover:not(:disabled),
+.wb-menu-trigger:hover {
+  color: var(--wb-text-strong);
+  background: var(--wb-surface-hover);
+}
+
+.wb-button[data-variant='primary']:hover:not(:disabled),
+.wb-button[data-variant='danger']:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+.wb-button:focus-visible,
+.wb-icon-button:focus-visible,
+.wb-menu-trigger:focus-visible,
+.wb-menu-item:focus-visible {
+  outline: 1px solid var(--wb-accent);
+  outline-offset: 0;
+}
+
+.wb-menu-content {
+  z-index: 50;
+  min-width: 180px;
+  padding: 5px;
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius-md);
+  color: var(--wb-text);
+  background: var(--wb-surface-raised);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
+}
+
+.wb-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 0 8px;
+  border-radius: var(--wb-radius-sm);
+  color: var(--wb-text);
+  user-select: none;
+}
+
+.wb-menu-item[data-highlighted] {
+  color: #fff;
+  background: var(--wb-accent-soft);
+}
+
+.wb-menu-item[data-disabled] {
+  color: var(--wb-text-subtle);
+  pointer-events: none;
+}
+
+.wb-menu-separator {
+  height: 1px;
+  margin: 5px 3px;
+  background: var(--wb-border);
+}

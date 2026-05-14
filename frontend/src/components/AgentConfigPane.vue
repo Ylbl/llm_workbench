@@ -99,14 +99,18 @@ onMounted(() => load())
       <h3>Agent Config</h3>
       <span class="muted-label">{{ workspaceItem.title }}</span>
       <div style="margin-left:auto;display:flex;gap:8px">
-        <button class="primary-button" :disabled="isSaving" @click="save()">Save</button>
+        <button class="primary-button" :disabled="isSaving" @click="save()">{{ isSaving ? 'Saving...' : 'Save' }}</button>
         <button class="secondary-button" @click="run()" :disabled="isRunning">{{ isRunning ? 'Running...' : 'Run' }}</button>
       </div>
     </div>
-    <div v-if="error" class="chat-error">{{ error }}</div>
-    <div v-if="runResult" class="agent-result">
+    <div v-if="error" class="chat-error"><strong>Error:</strong> {{ error }}</div>
+    <div v-if="isRunning" class="agent-result"><em>Running agent, waiting for response...</em></div>
+    <div v-else-if="runResult" class="agent-result">
       <strong>Result:</strong>
       <pre>{{ runResult }}</pre>
+    </div>
+    <div v-else class="agent-result agent-result-placeholder">
+      Click <strong>Run</strong> to execute this agent. The LLM response will appear here.
     </div>
     <div class="agent-form">
       <label>Name <input v-model="agent.name" /></label>
@@ -147,7 +151,8 @@ onMounted(() => load())
 .agent-textarea { padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; resize: vertical; }
 .agent-json { padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-family: monospace; font-size: 13px; resize: vertical; }
 .agent-blocks { display: flex; flex-wrap: wrap; gap: 6px; }
-.agent-result { padding: 12px; background: var(--surface-subtle); border-radius: 6px; }
+.agent-result { padding: 12px 16px; background: var(--surface-subtle); border-radius: 6px; margin-top: 8px; }
+.agent-result-placeholder { color: var(--muted); font-size: 14px; font-style: italic; text-align: center; padding: 24px; border: 1px dashed var(--border); background: var(--bg); }
 .agent-result pre { margin: 8px 0 0; white-space: pre-wrap; font-size: 13px; }
 .chat-error { padding: 8px 12px; background: var(--danger-soft); color: var(--danger); border-radius: 6px; font-size: 13px; }
 .chat-block-item { font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 2px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; }

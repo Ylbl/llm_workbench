@@ -13,7 +13,6 @@ use tokio::sync::mpsc;
 use uuid::Uuid;
 
 use crate::{ApiError, AppState};
-use crate::prompt_blocks::PromptBlockRow;
 
 #[derive(Debug, Serialize, sqlx::FromRow)]
 pub struct LlmProviderRow {
@@ -142,30 +141,12 @@ fn validate_name(name: &str) -> Result<(), ApiError> {
 pub fn build_llm_request(
     profile: &LlmRequestProfileRow,
     messages: &[Value],
-    prompt_blocks: &[PromptBlockRow],
-    system_prompt: Option<&str>,
     runtime_overrides: Option<&Value>,
     raw_body_overrides: Option<&Value>,
 ) -> Value {
     let mut body = profile.base_body.clone();
     if profile.message_injection_mode == "replace_messages" {
-        let mut msg_vec: Vec<Value> = Vec::new();
-        if let Some(sp) = system_prompt {
-            if !sp.trim().is_empty() {
-                msg_vec.push(serde_json::json!({
-                    "role": "system",
-                    "content": sp,
-                }));
-            }
-        }
-        for block in prompt_blocks {
-            msg_vec.push(serde_json::json!({
-                "role": block.block_type,
-                "content": block.content,
-            }));
-        }
-        msg_vec.extend_from_slice(messages);
-        body["messages"] = serde_json::json!(msg_vec);
+        body["messages"] = serde_json::json!(messages);
     }
     if let Some(overrides) = runtime_overrides {
         merge_json(&mut body, overrides);
@@ -199,6 +180,7 @@ pub async fn stream_llm_response(
     profile_id: Uuid,
     prompt_block_ids: &[Uuid],
     system_prompt: Option<&str>,
+    user_input: Option<&str>,
     tx: mpsc::Sender<Result<Event, Infallible>>,
 ) -> Result<(String, Value), ApiError> {
     let profile = sqlx::query_as::<_, LlmRequestProfileRow>(
@@ -230,13 +212,29 @@ pub async fn stream_llm_response(
     .await
     .map_err(ApiError::from)?;
 
-    let msgs: Vec<Value> = msg_rows.iter().map(|m| {
-        serde_json::json!({ "role": m.role, "content": m.content })
-    }).collect();
+    let mut msgs: Vec<Value> = Vec::new();
+
+    if let Some(sp) = system_prompt {
+        msgs.push(serde_json::json!({ "role": "system", "content": sp }));
+    }
 
     let blocks = crate::prompt_blocks::inject_prompt_blocks(pool, prompt_block_ids).await?;
+    for block in &blocks {
+        msgs.push(serde_json::json!({
+            "role": block.block_type,
+            "content": block.content,
+        }));
+    }
 
-    let body = build_llm_request(&profile, &msgs, &blocks, system_prompt, None, None);
+    for m in &msg_rows {
+        msgs.push(serde_json::json!({ "role": m.role, "content": m.content }));
+    }
+
+    if let Some(input) = user_input {
+        msgs.push(serde_json::json!({ "role": "user", "content": input }));
+    }
+
+    let body = build_llm_request(&profile, &msgs, None, None);
 
     let url = format!(
         "{}{}",

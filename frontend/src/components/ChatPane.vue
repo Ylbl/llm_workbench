@@ -31,6 +31,20 @@ const profiles = ref<LlmRequestProfile[]>([])
 const selectedProfileId = ref<string>('')
 const promptBlocks = ref<PromptBlock[]>([])
 const selectedBlockIds = ref<string[]>([])
+const agents = ref<Array<{id:string;name:string;llm_request_profile_id:string|null;system_prompt:string|null;selected_prompt_block_ids:string[]}>>([])
+const selectedAgentId = ref<string>('')
+const systemPromptForRequest = ref<string | null>(null)
+
+watch(selectedAgentId, (id) => {
+  const agent = agents.value.find(a => a.id === id)
+  if (agent) {
+    if (agent.llm_request_profile_id) selectedProfileId.value = agent.llm_request_profile_id
+    selectedBlockIds.value = [...agent.selected_prompt_block_ids]
+    systemPromptForRequest.value = agent.system_prompt
+  } else {
+    systemPromptForRequest.value = null
+  }
+})
 
 const conversationTitle = computed(() => props.workspaceItem.title)
 
@@ -38,13 +52,15 @@ async function initChat() {
   isLoading.value = true
   error.value = null
   try {
-    const [conversations, p, blocks] = await Promise.all([
+    const [conversations, p, blocks, agentList] = await Promise.all([
       fetchConversations(),
       llmApi.profiles.list().catch(() => [] as LlmRequestProfile[]),
       llmApi.promptBlocks.list().catch(() => [] as PromptBlock[]),
+      fetch('/api/agents', { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : []).catch(() => []),
     ])
     profiles.value = p
     promptBlocks.value = blocks
+    agents.value = agentList as typeof agents.value
     const existing = conversations.find((c) => c.workspace_item_id === props.workspaceItem.id)
     if (existing) {
       conversationId.value = existing.id
@@ -108,6 +124,7 @@ async function sendRealStream() {
         body: JSON.stringify({
           request_profile_id: selectedProfileId.value,
           prompt_block_ids: selectedBlockIds.value,
+          system_prompt: systemPromptForRequest.value,
         }),
       },
     )
@@ -242,6 +259,10 @@ onBeforeUnmount(() => disconnectSSE())
       <select v-model="selectedProfileId" class="chat-profile-select">
         <option value="">Mock Stream</option>
         <option v-for="p in profiles" :key="p.id" :value="p.id">{{ p.name }}</option>
+      </select>
+      <select v-model="selectedAgentId" class="chat-profile-select">
+        <option value="">No Agent</option>
+        <option v-for="a in agents" :key="a.id" :value="a.id">{{ a.name }}</option>
       </select>
       <div v-if="promptBlocks.length > 0" class="chat-blocks">
         <span class="chat-blocks-label">Blocks:</span>

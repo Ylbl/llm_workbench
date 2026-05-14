@@ -180,7 +180,10 @@ async fn run_agent(State(state): State<AppState>, Path(id): Path<Uuid>, Json(pay
         let (tx, _rx) = tokio::sync::mpsc::channel::<Result<axum::response::sse::Event, std::convert::Infallible>>(1);
         match crate::llm::stream_llm_response(
             &pool, payload.conversation_id.unwrap_or(Uuid::nil()), profile_id,
-            &agent.selected_prompt_block_ids, agent.system_prompt.as_deref(), tx,
+            &agent.selected_prompt_block_ids,
+            agent.system_prompt.as_deref(),
+            payload.input.get("message").and_then(|v| v.as_str()),
+            tx,
         ).await {
             Ok((content, _req)) => ("completed".to_string(), Some(serde_json::json!({"content": content})), None),
             Err(e) => ("failed".to_string(), None, Some(e.to_string())),

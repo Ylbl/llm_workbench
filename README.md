@@ -57,6 +57,19 @@ Run tests:
 
 Use `npm.cmd` rather than `npm` when running frontend package commands directly.
 
+## UI Direction
+
+Frontend UI work now follows a custom workbench design system:
+
+- The IDE shell is first-party UI.
+- Reka UI is used only as a headless interaction layer.
+- Business views should use `frontend/src/ui/Wb*.vue` wrappers instead of
+  importing UI primitives directly.
+- Visual consistency is governed by `frontend/src/ui/tokens.css` and
+  `frontend/src/ui/components.css`.
+
+See `docs/UI_ARCHITECTURE.md` for the working rules.
+
 Run migrations manually:
 
 ```cmd

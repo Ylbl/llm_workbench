@@ -437,6 +437,8 @@ struct StreamRequest {
     #[serde(default)]
     prompt_block_ids: Vec<Uuid>,
     #[serde(default)]
+    system_prompt: Option<String>,
+    #[serde(default)]
     runtime_overrides: Option<Value>,
     #[serde(default)]
     raw_body_overrides: Option<Value>,
@@ -456,7 +458,8 @@ async fn stream_conversation(
 
     tokio::spawn(async move {
         let result = crate::llm::stream_llm_response(
-            &pool_clone, conv_id, req_profile_id, &payload.prompt_block_ids, None, tx.clone(),
+            &pool_clone, conv_id, req_profile_id, &payload.prompt_block_ids,
+            payload.system_prompt.as_deref(), None, tx.clone(),
         ).await;
 
         match result {
